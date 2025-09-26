@@ -1,20 +1,27 @@
 export default class ShapeSound {
 
     constructor(frequency, settings, pan, noteLength) {
-        const osc = this.osc = new p5.Oscillator(frequency);
-        this.oscVibrato = null;
-        this.addVibrato(settings, frequency, osc);
+        try {
+            const osc = this.osc = new p5.Oscillator(frequency);
+            this.oscVibrato = null;
+            this.addVibrato(settings, frequency, osc);
 
-        if (settings.volume > 0) {
-            const adsrEnvelope = this.createAdsrEnvelope(noteLength, settings.volume);
-            osc.setType(settings.waves[settings.waveType]);
-            osc.amp(adsrEnvelope);
-            osc.pan(pan);
-            if (this.oscVibrato) {
-                this.oscVibrato.start();
+            if (settings.volume > 0) {
+                const adsrEnvelope = this.createAdsrEnvelope(noteLength, settings.volume);
+                osc.setType(settings.waves[settings.waveType]);
+                osc.amp(adsrEnvelope);
+                osc.pan(pan);
+                if (this.oscVibrato) {
+                    this.oscVibrato.start();
+                }
+                osc.start();
+                adsrEnvelope.play();
             }
-            osc.start();
-            adsrEnvelope.play();
+        } catch (error) {
+            console.warn('Erreur lors de la création du son:', error);
+            // Créer un oscillateur silencieux en cas d'erreur
+            this.osc = { stop: () => {} };
+            this.oscVibrato = null;
         }
     }
 
@@ -48,7 +55,15 @@ export default class ShapeSound {
     }
 
     stop() {
-        this.osc.stop();
-        this.oscVibrato && this.oscVibrato.stop();
+        try {
+            if (this.osc && typeof this.osc.stop === 'function') {
+                this.osc.stop();
+            }
+            if (this.oscVibrato && typeof this.oscVibrato.stop === 'function') {
+                this.oscVibrato.stop();
+            }
+        } catch (error) {
+            console.warn('Erreur lors de l\'arrêt du son:', error);
+        }
     }
 }

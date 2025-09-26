@@ -2,35 +2,207 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Harmonic Explorer</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.14/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.14/addons/p5.dom.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.14/addons/p5.sound.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorateur Harmonique - Harmonic Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/addons/p5.sound.min.js"></script>
     <script type='module' src="sketch.js"></script>
     <style type="text/css">
         body {
+            margin: 0;
+            padding: 0;
             width: 100%;
-            font-family: sans-serif;
+            height: 100vh;
+            font-family: 'Inter', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            overflow: hidden;
         }
+        
         .label {
-            font-size: 70%;
-            color: white;
+            font-size: 12px;
+            color: #ffffff;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
+        
         #nomodules {
             display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            z-index: 1000;
         }
+        
+        #nomodules p {
+            margin-bottom: 1rem;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        #nomodules a {
+            color: #2a5298;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        #nomodules a:hover {
+            text-decoration: underline;
+        }
+        
         #controls {
-            position: absolute;
-            background-color: rgba(255, 255, 255, 0.3);
-            margin: .3em;
-            padding: .2em;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            min-width: 280px;
+            z-index: 100;
+        }
+        
+        #controls table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+        
+        #controls td {
+            padding: 4px 8px;
+            vertical-align: middle;
+        }
+        
+        #controls td:first-child {
+            width: 40%;
+            text-align: right;
+            padding-right: 12px;
+        }
+        
+        #controls input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.2);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        #controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        
+        #controls input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        
+        #controls select {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            color: white;
+            padding: 6px 10px;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        #controls select:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        
+        #controls select option {
+            background: #333;
+            color: white;
+        }
+        
+        #key {
+            background: rgba(76, 175, 80, 0.2);
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-align: center;
+            display: inline-block;
+            min-width: 40px;
+            font-family: 'Inter', 'Arial', 'Helvetica', sans-serif;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        /* Animation pour les contrôles */
+        #controls {
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            #controls {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                min-width: auto;
+                padding: 15px;
+            }
+            
+            #controls table {
+                font-size: 11px;
+            }
+            
+            .label {
+                font-size: 11px;
+            }
         }
     </style>
 </head>
 <body>
 <div id="nomodules">
-    <p>This application uses “ES Modules”, which apparently are not supported or enabled in your browser.</p>
-    <a href="https://jakearchibald.com/2017/es-modules-in-browsers/">More information</a>
+    <h3>🚨 Navigateur non compatible</h3>
+    <p>Cette application utilise les "ES Modules" qui ne sont pas supportés par votre navigateur.</p>
+    <p><strong>Solutions :</strong></p>
+    <ul style="text-align: left; max-width: 300px; margin: 0 auto;">
+        <li>Mettez à jour votre navigateur vers la dernière version</li>
+        <li>Utilisez Chrome, Firefox, Safari ou Edge moderne</li>
+        <li>Activez le support des ES Modules si disponible</li>
+    </ul>
+    <a href="https://jakearchibald.com/2017/es-modules-in-browsers/" target="_blank">Plus d'informations</a>
 </div>
 <script nomodule>
     document.getElementById('nomodules').style.display = 'block';

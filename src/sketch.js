@@ -1,8 +1,11 @@
 // Harmonic Explorer
+// Explorateur Harmonique - Application de visualisation et génération de sons harmoniques
 
 import Shape from './shape.js';
 
-new p5(p => {
+// Gestion d'erreur globale pour les ES modules
+try {
+    new p5(p => {
     const Settings = {
         scaleChangeSecs:            15,
         disappearDistance:          3000,
@@ -21,7 +24,7 @@ new p5(p => {
             82.41, 87.31, 92.50, 98.00,
             103.83, 110.00, 116.54, 123.47
         ],
-        keyNames:                   'C D♭ D E♭ E F G♭ G A♭ A B♭ B'.split(' '),
+        keyNames:                   ['Do', 'Do♯', 'Ré', 'Ré♯', 'Mi', 'Fa', 'Fa♯', 'Sol', 'Sol♯', 'La', 'La♯', 'Si'],
         xMargin:                    40,
         waves:                      ['sine', 'triangle', 'sawtooth', 'square']
     };
@@ -92,9 +95,9 @@ new p5(p => {
                 select.option(wave.charAt(0).toUpperCase() + wave.slice(1));
             })
         }
-        const wave = p.createSelect(); // Using select resulted in a p5 error
+        const wave = p.createSelect();
+        wave.parent('waveParent');
         addWaveTypes(wave);
-        wave.parent('#waveParent');
         wave.changed(() => Settings.waveType = wave.elt.selectedIndex);
 
         const vibratoDepth = p.select('#vibratoDepth');
@@ -106,9 +109,9 @@ new p5(p => {
         vibratoFreq.value(Settings.vibratoFreq);
         vibratoFreq.changed(() => Settings.vibratoFreq = vibratoFreq.value());
 
-        const vibratoWave = p.createSelect(); // Using select resulted in a p5 error
+        const vibratoWave = p.createSelect();
+        vibratoWave.parent('vibratoWaveParent');
         addWaveTypes(vibratoWave);
-        vibratoWave.parent('#vibratoWaveParent');
         vibratoWave.changed(() => Settings.vibratoWaveType = vibratoWave.elt.selectedIndex);
 
         numHarmonics.value(Settings.numHarmonics);
@@ -122,10 +125,10 @@ new p5(p => {
         speed.value(Settings.speed);
         speed.changed(() => Settings.speed = speed.value());
 
-        const keyChange = p.createSelect(); // Using select resulted in a p5 error
+        const keyChange = p.createSelect();
+        keyChange.parent('keyChangeParent');
         ["Cycle of fourths", "Incremental", "Random", "None"].forEach(name =>
             keyChange.option(name));
-        keyChange.parent('#keyChangeParent');
         keyChange.changed(() => Settings.keyChangeStyle = keyChange.elt.selectedIndex);
 
         displayKey();
@@ -156,7 +159,16 @@ new p5(p => {
     }
 
     function displayKey() {
-        p.select('#key').elt.textContent = Settings.keyNames[keyIndex];
+        const keyElement = p.select('#key').elt;
+        const keyName = Settings.keyNames[keyIndex];
+        
+        // S'assurer que l'affichage est correct
+        keyElement.innerHTML = keyName;
+        keyElement.style.fontFamily = 'Arial, sans-serif';
+        keyElement.style.fontWeight = 'bold';
+        
+        // Debug: afficher dans la console
+        console.log('Tonalité actuelle:', keyName);
     }
 
     function createNewShapeIfTime() {
@@ -184,4 +196,42 @@ new p5(p => {
             shapes.splice(deleteIndexes[i], 1);
         }
     }
-});
+    });
+} catch (error) {
+    console.error('Erreur lors du chargement de l\'Explorateur Harmonique:', error);
+    
+    // Afficher un message d'erreur à l'utilisateur
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 255, 255, 0.95);
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        text-align: center;
+        z-index: 1000;
+        max-width: 400px;
+    `;
+    errorDiv.innerHTML = `
+        <h3 style="color: #e74c3c; margin-top: 0;">⚠️ Erreur de chargement</h3>
+        <p style="color: #333; margin-bottom: 1rem;">
+            Une erreur s'est produite lors du chargement de l'application.
+        </p>
+        <p style="color: #666; font-size: 14px;">
+            Veuillez actualiser la page ou utiliser un navigateur plus récent.
+        </p>
+        <button onclick="location.reload()" style="
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 1rem;
+        ">Actualiser</button>
+    `;
+    document.body.appendChild(errorDiv);
+}
